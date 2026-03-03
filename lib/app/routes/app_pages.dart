@@ -1,23 +1,9 @@
 import 'package:get/get.dart';
-import 'package:my_kasir/modules/auth/auth_binding.dart';
-import 'package:my_kasir/modules/auth/view/login.dart';
-import 'package:my_kasir/modules/auth/view/register.dart';
-
 import 'app_routes.dart';
 
+// App pages with GetX routing (reserved for future use)
 class AppPages {
-  static const INITIAL = Routes.LOGIN;
+  static const INITIAL = Routes.HOME;
 
-  static final routes = <GetPage>[
-    GetPage(
-      name: Routes.LOGIN,
-      page: () => LoginPage(),
-      binding: AuthBinding(),
-    ),
-    GetPage(
-      name: Routes.REGISTER,
-      page: () => RegisterPage(),
-      binding: AuthBinding(),
-    ),
-  ];
+  static final routes = <GetPage>[];
 }
