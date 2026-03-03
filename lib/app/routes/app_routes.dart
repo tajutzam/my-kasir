@@ -1,8 +1,7 @@
+// Routes for navigation (not used with BottomNavigation)
 abstract class Routes {
-  static const LOGIN = '/login';
-  static const REGISTER = '/register';
-}
-
-abstract class AppPages {
-  static const INITIAL = Routes.LOGIN;
+  static const HOME = '/home';
+  static const MENU = '/menu';
+  static const ORDERS = '/orders';
+  static const OFFERS = '/offers';
 }

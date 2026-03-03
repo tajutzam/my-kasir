@@ -1,9 +1,10 @@
 import 'package:get/get.dart';
-import '../../core/services/database_service.dart';
 
+/// InitialBinding is reserved for future global dependencies
+/// DatabaseService is already initialized in main()
 class InitialBinding extends Bindings {
   @override
   void dependencies() {
-    Get.putAsync<DatabaseService>(() async => DatabaseService().init());
+    // Add global dependencies here in the future
   }
 }
