@@ -1,21 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'core/services/database_service.dart';
-import 'core/theme/app_theme.dart';
-import 'modules/main/main_page.dart';
-import 'modules/cart/cart_controller.dart';
+import 'app/bindings/initial_binding.dart';
+import 'app/routes/app_pages.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize database and bindings before app starts
-  final databaseService = await DatabaseService().init();
-  Get.put(databaseService);
-
-  // Initialize CartController before app starts
-  Get.put(CartController());
-
   runApp(const MyApp());
 }
 
@@ -27,8 +17,13 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'My Kasir',
-      theme: AppTheme.lightTheme,
-      home: const MainPage(),
+
+      initialBinding: InitialBinding(),
+
+      initialRoute: AppPages.INITIAL,
+      getPages: AppPages.routes,
+
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
     );
   }
 }
