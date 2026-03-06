@@ -4,4 +4,5 @@ abstract class Routes {
   static const MENU = '/menu';
   static const ORDERS = '/orders';
   static const OFFERS = '/offers';
+  static const MAIN = "/main";
 }
