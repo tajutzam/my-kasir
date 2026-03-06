@@ -10,7 +10,27 @@ class ProductRepository {
     return db.productDao.getAllProducts();
   }
 
-  Future<void> insert(ProductModel product) {
+  Future<ProductModel?> getById(int id) {
+    return db.productDao.getProductById(id);
+  }
+
+  Future<ProductModel?> getBySku(String sku) {
+    return db.productDao.getProductBySku(sku);
+  }
+
+  Future<List<ProductModel>> getByCategory(int categoryId) {
+    return db.productDao.getProductsByCategory(categoryId);
+  }
+
+  Future<List<ProductModel>> search(String query) {
+    return db.productDao.searchProducts('%$query%');
+  }
+
+  Future<List<ProductModel>> getLowStock(int minStock) {
+    return db.productDao.getLowStockProducts(minStock);
+  }
+
+  Future<int> insert(ProductModel product) {
     return db.productDao.insertProduct(product);
   }
 
