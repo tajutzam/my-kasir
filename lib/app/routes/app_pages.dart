@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:my_kasir/modules/home/home_page.dart';
 import 'package:my_kasir/modules/main/main_binding.dart';
 import 'package:my_kasir/modules/main/main_page.dart';
+import 'package:my_kasir/modules/management/categories/category_management_page.dart';
+import 'package:my_kasir/modules/management/products/product_management_page.dart';
 import 'package:my_kasir/modules/menu/menu_page.dart';
 import 'package:my_kasir/modules/offers/offers_page.dart';
 import 'package:my_kasir/modules/orders/orders_page.dart';
@@ -15,5 +17,13 @@ class AppPages {
     GetPage(name: Routes.OFFERS, page: () => OffersPage()),
     GetPage(name: Routes.ORDERS, page: () => OrdersPage()),
     GetPage(name: Routes.MAIN, page: () => MainPage(), binding: MainBinding()),
+    GetPage(
+      name: Routes.MANAGEMENT_CATEGORY,
+      page: () => CategoryManagementPage(),
+    ),
+    GetPage(
+      name: Routes.MANAGEMENT_PRODUCT,
+      page: () => ProductManagementPage(),
+    ),
   ];
 }
