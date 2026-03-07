@@ -4,86 +4,27 @@ import 'package:my_kasir/core/theme/app_colors.dart';
 import 'package:my_kasir/core/utils/app_utils.dart';
 import 'package:my_kasir/modules/cart/cart_controller.dart';
 import 'package:my_kasir/modules/debug/debug_page.dart';
-import 'package:my_kasir/data/models/product_model.dart';
+import 'package:my_kasir/modules/home/home_controller.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
 
   final cartController = Get.find<CartController>();
 
-  // Sample products - in real app, get from database
-  final sampleProducts = [
-    ProductModel(
-      id: 1,
-      categoryId: 1,
-      name: 'Premium Notebook',
-      sku: 'NB-001',
-      stock: 50,
-      originalPrice: 80000,
-    ),
-    ProductModel(
-      id: 2,
-      categoryId: 1,
-      name: 'Ballpoint Pen Black',
-      sku: 'PN-001',
-      stock: 100,
-      originalPrice: 85000,
-    ),
-    ProductModel(
-      id: 3,
-      categoryId: 1,
-      name: 'Desk Organizer',
-      sku: 'DO-001',
-      stock: 30,
-      originalPrice: 75000,
-    ),
-    ProductModel(
-      id: 4,
-      categoryId: 1,
-      name: 'USB Cable Type-C',
-      sku: 'USB-001',
-      stock: 75,
-      originalPrice: 94000,
-    ),
-    ProductModel(
-      id: 5,
-      categoryId: 1,
-      name: 'Stapler Premium',
-      sku: 'ST-001',
-      stock: 40,
-      originalPrice: 78000,
-    ),
-    ProductModel(
-      id: 6,
-      categoryId: 1,
-      name: 'File Folder A4',
-      sku: 'FF-001',
-      stock: 200,
-      originalPrice: 55000,
-    ),
-  ];
-
-  final categories = [
-    {'name': 'All', 'icon': Icons.apps},
-    {'name': 'Stationery', 'icon': Icons.edit},
-    {'name': 'Electronics', 'icon': Icons.devices},
-    {'name': 'Food', 'icon': Icons.fastfood},
-    {'name': 'Beverages', 'icon': Icons.coffee},
-  ];
-
-  final selectedCategory = 0.obs;
-
   @override
   Widget build(BuildContext context) {
+    Get.put(HomeController());
+    final controller = Get.find<HomeController>();
+
     return Scaffold(
       backgroundColor: AppColors.scaffold,
       body: SafeArea(
         child: Column(
           children: [
             _buildAppBar(),
-            _buildSearchBar(),
-            _buildCategoryChips(),
-            Expanded(child: _buildProductGrid()),
+            _buildSearchBar(controller),
+            _buildCategoryChips(controller),
+            Expanded(child: _buildProductGrid(controller)),
           ],
         ),
       ),
@@ -146,7 +87,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(HomeController controller) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Container(
@@ -159,9 +100,15 @@ class HomePage extends StatelessWidget {
           children: [
             const Icon(Icons.search, color: AppColors.textGrey),
             const SizedBox(width: 8),
-            Text(
-              'Search products...',
-              style: TextStyle(color: AppColors.textGrey.withValues(alpha: 0.7)),
+            Expanded(
+              child: TextField(
+                onChanged: (value) => controller.searchProducts(value),
+                decoration: const InputDecoration(
+                  hintText: 'Search products...',
+                  hintStyle: TextStyle(color: AppColors.textGrey),
+                  border: InputBorder.none,
+                ),
+              ),
             ),
           ],
         ),
@@ -169,65 +116,96 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryChips() {
-    return SizedBox(
+  Widget _buildCategoryChips(HomeController controller) {
+    return Obx(() => SizedBox(
       height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: categories.length,
+        itemCount: controller.categories.length,
         itemBuilder: (context, index) {
-          final category = categories[index];
-          return Obx(() => Padding(
+          final category = controller.categories[index];
+          return Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: FilterChip(
+            child: Obx(() => FilterChip(
               label: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(category['icon'] as IconData, size: 16, color: selectedCategory.value == index ? AppColors.white : AppColors.textDark),
+                  Icon(
+                    category['icon'] as IconData,
+                    size: 16,
+                    color: controller.selectedCategoryId.value == (category['id'] as int)
+                        ? AppColors.white
+                        : AppColors.textDark,
+                  ),
                   const SizedBox(width: 4),
                   Text(category['name'] as String),
                 ],
               ),
-              selected: selectedCategory.value == index,
-              onSelected: (_) => selectedCategory.value = index,
+              selected: controller.selectedCategoryId.value == (category['id'] as int),
+              onSelected: (_) => controller.filterByCategory(category['id'] as int),
               backgroundColor: AppColors.lightGrey,
               selectedColor: AppColors.primaryDark,
               labelStyle: TextStyle(
-                color: selectedCategory.value == index ? AppColors.white : AppColors.textDark,
+                color: controller.selectedCategoryId.value == (category['id'] as int)
+                    ? AppColors.white
+                    : AppColors.textDark,
                 fontWeight: FontWeight.w500,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               side: BorderSide.none,
-            ),
-          ));
+            )),
+          );
         },
       ),
-    );
+    ));
   }
 
-  Widget _buildProductGrid() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.75,
+  Widget _buildProductGrid(HomeController controller) {
+    return Obx(() {
+      if (controller.filteredProducts.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.textGrey.withValues(alpha: 0.5)),
+              const SizedBox(height: 16),
+              Text(
+                'No products found',
+                style: TextStyle(color: AppColors.textGrey, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => controller.refresh(),
+                child: Text('Refresh', style: TextStyle(color: AppColors.primaryDark)),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 0.75,
+          ),
+          itemCount: controller.filteredProducts.length,
+          itemBuilder: (context, index) {
+            final product = controller.filteredProducts[index];
+            return _buildProductCard(product);
+          },
         ),
-        itemCount: sampleProducts.length,
-        itemBuilder: (context, index) {
-          final product = sampleProducts[index];
-          return _buildProductCard(product);
-        },
-      ),
-    );
+      );
+    });
   }
 
-  Widget _buildProductCard(ProductModel product) {
+  Widget _buildProductCard(dynamic product) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -273,7 +251,7 @@ class HomePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  AppUtils.formatRupiah(product.originalPrice),
+                  AppUtils.formatRupiah(product.finalPrice),
                   style: const TextStyle(
                     color: AppColors.primaryDark,
                     fontWeight: FontWeight.bold,
