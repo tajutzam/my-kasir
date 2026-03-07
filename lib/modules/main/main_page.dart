@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:my_kasir/app/routes/app_routes.dart';
 import 'package:my_kasir/core/theme/app_colors.dart';
 import 'package:my_kasir/modules/main/main_controller.dart';
 import 'package:my_kasir/widgets/custom_app_bar.dart';
@@ -13,35 +14,31 @@ class MainPage extends StatelessWidget {
 
     final List<Map<String, dynamic>> menuItems = [
       {
-        'icon': Icons.grid_view_rounded,
-        'label': 'Dashboard',
-        'color': Colors.blue,
+        'icon': Icons.shopping_cart_checkout,
+        'label': 'Kasir',
+        'color': AppColors.primaryMedium,
       },
       {
         'icon': Icons.inventory_2_rounded,
         'label': 'Produk',
-        'color': Colors.orange,
-      },
-      {
-        'icon': Icons.shopping_cart_rounded,
-        'label': 'Transaksi',
-        'color': Colors.green,
+        'color': AppColors.primaryMedium,
       },
       {
         'icon': Icons.analytics_rounded,
         'label': 'Laporan',
-        'color': Colors.purple,
+        'color': AppColors.primaryMedium,
       },
       {
         'icon': Icons.settings_suggest_rounded,
         'label': 'Kelola',
-        'color': Colors.teal,
+        'color': AppColors.primaryMedium,
       },
       {
         'icon': Icons.info_rounded,
         'label': 'Bantuan',
-        'color': Colors.blueGrey,
+        'color': AppColors.primaryMedium,
       },
+      {'icon': Icons.logout, 'label': 'Logout', 'color': Colors.red},
     ];
 
     return Scaffold(
@@ -91,12 +88,19 @@ class MainPage extends StatelessWidget {
               itemCount: menuItems.length,
               itemBuilder: (context, index) {
                 final item = menuItems[index];
+                // Di dalam GridView.builder -> itemBuilder
                 return _buildMenuCard(
                   context: context,
                   icon: item['icon'],
                   label: item['label'],
                   color: item['color'],
-                  onTap: () => Get.to(ctrl.pages[index]),
+                  onTap: () {
+                    if (item['label'] == 'Logout') {
+                      Get.offAllNamed(Routes.SPLASH);
+                    } else {
+                      Get.toNamed(ctrl.routeNames[index]);
+                    }
+                  },
                 );
               },
             ),
@@ -114,6 +118,7 @@ class MainPage extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: AppColors.primaryDark.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
@@ -258,6 +263,7 @@ class MainPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: color.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),

@@ -90,9 +90,7 @@ class DebugPage extends StatelessWidget {
               ),
               const Divider(height: 1),
               // Content
-              Expanded(
-                child: _buildContent(controller),
-              ),
+              Expanded(child: _buildContent(controller)),
             ],
           );
         },
@@ -100,20 +98,27 @@ class DebugPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTab(BuildContext context, DebugController controller, int index, String label) {
+  Widget _buildTab(
+    BuildContext context,
+    DebugController controller,
+    int index,
+    String label,
+  ) {
     return Expanded(
-      child: Obx(() => ElevatedButton(
-        onPressed: () => controller.selectedTab.value = index,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: controller.selectedTab.value == index
-              ? AppColors.primaryDark
-              : AppColors.textGrey.withValues(alpha: 0.2),
-          foregroundColor: controller.selectedTab.value == index
-              ? AppColors.white
-              : AppColors.textDark,
+      child: Obx(
+        () => ElevatedButton(
+          onPressed: () => controller.selectedTab.value = index,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: controller.selectedTab.value == index
+                ? AppColors.primaryDark
+                : AppColors.textGrey.withValues(alpha: 0.2),
+            foregroundColor: controller.selectedTab.value == index
+                ? AppColors.white
+                : AppColors.textDark,
+          ),
+          child: Text(label),
         ),
-        child: Text(label),
-      )),
+      ),
     );
   }
 
@@ -144,7 +149,10 @@ class DebugPage extends StatelessWidget {
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: AppColors.primaryDark,
-              child: Text('${category.id}', style: const TextStyle(color: AppColors.white)),
+              child: Text(
+                '${category.id}',
+                style: const TextStyle(color: AppColors.white),
+              ),
             ),
             title: Text(category.name),
             subtitle: Text(
@@ -171,7 +179,10 @@ class DebugPage extends StatelessWidget {
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: AppColors.primaryMedium,
-              child: Text('${product.id}', style: const TextStyle(color: AppColors.white)),
+              child: Text(
+                '${product.id}',
+                style: const TextStyle(color: AppColors.white),
+              ),
             ),
             title: Text(product.name),
             subtitle: Text(
@@ -182,8 +193,10 @@ class DebugPage extends StatelessWidget {
             ),
             trailing: product.hasDiscount
                 ? Chip(
-                    label: Text('${product.discountPercentage?.toStringAsFixed(0)}% OFF',
-                        style: const TextStyle(fontSize: 10)),
+                    label: Text(
+                      '${product.discountPercentage?.toStringAsFixed(0)}% OFF',
+                      style: const TextStyle(fontSize: 10),
+                    ),
                     backgroundColor: AppColors.badgeRed,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                   )
@@ -206,8 +219,10 @@ class DebugPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Order #${cart.orderNumber.value}',
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                'Order #${cart.orderNumber.value}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Text(controller.cartSummary),
             ],
@@ -221,12 +236,17 @@ class DebugPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final item = controller.cartItems[index];
                     return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       child: ListTile(
                         leading: CircleAvatar(
                           backgroundColor: AppColors.badgeRed,
-                          child: Text('${item.quantity}',
-                              style: const TextStyle(color: AppColors.white)),
+                          child: Text(
+                            '${item.quantity}',
+                            style: const TextStyle(color: AppColors.white),
+                          ),
                         ),
                         title: Text(item.product.name),
                         subtitle: Text(
@@ -235,10 +255,16 @@ class DebugPage extends StatelessWidget {
                         ),
                         trailing: item.product.hasDiscount
                             ? Chip(
-                                label: Text('-${AppUtils.formatRupiah(item.discountAmount)}',
-                                    style: const TextStyle(fontSize: 10)),
-                                backgroundColor: AppColors.badgeRed.withValues(alpha: 0.2),
-                                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                                label: Text(
+                                  '-${AppUtils.formatRupiah(item.discountAmount)}',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                                backgroundColor: AppColors.badgeRed.withValues(
+                                  alpha: 0.2,
+                                ),
+                                labelPadding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                               )
                             : null,
                       ),

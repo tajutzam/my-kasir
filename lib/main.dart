@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:my_kasir/core/services/database_service.dart';
+import 'package:my_kasir/core/utils/app_utils.dart';
 
 import 'app/bindings/initial_binding.dart';
 import 'app/routes/app_pages.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final dbService = DatabaseService();
+  await Get.putAsync(() => dbService.init(), permanent: true);
+
+  AppUtils.cleanImageDirectory();
+
   runApp(const MyApp());
 }
 
