@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_kasir/core/theme/app_colors.dart';
 import 'package:my_kasir/core/utils/app_utils.dart';
-import 'package:my_kasir/modules/home/home_controller.dart';
 import 'package:my_kasir/modules/cart/cart_controller.dart';
-import 'package:my_kasir/data/models/product_model.dart';
-import 'package:my_kasir/modules/debug/debug_page.dart';
+import 'package:my_kasir/modules/home/home_controller.dart';
 import 'package:my_kasir/widgets/custom_app_bar.dart';
 
 class HomePage extends GetView<HomeController> {
@@ -16,10 +14,11 @@ class HomePage extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    Get.put(HomeController());
+    final controller = Get.find<HomeController>();
+
     return Scaffold(
-      appBar: CustomAppBar(
-        
-      ),
+      appBar: CustomAppBar(),
       backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
         child: Stack(
@@ -70,6 +69,8 @@ class HomePage extends GetView<HomeController> {
       initialChildSize: 0.12,
       minChildSize: 0.12,
       maxChildSize: 0.9,
+      snap: true,
+      snapSizes: const [0.12, 0.5, 0.9],
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -77,21 +78,18 @@ class HomePage extends GetView<HomeController> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 15,
                 offset: const Offset(0, -5),
               ),
             ],
           ),
-          // Kita tidak menggunakan Column di sini agar ListView bisa memenuhi seluruh area
           child: ListView(
             controller: scrollController,
-            padding: EdgeInsets.zero, // Set zero agar header menempel ke atas
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.zero,
             children: [
-              // SEKARANG HEADER ADA DI DALAM LISTVIEW
-              // Ini membuat header bisa digunakan untuk menarik sheet
               _buildSheetHeader(),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -218,46 +216,6 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  // --- SISANYA TETAP SAMA ---
-
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      color: AppColors.primaryDark,
-      child: Row(
-        children: [
-          const Icon(Icons.storefront_rounded, color: Colors.white, size: 28),
-          const SizedBox(width: 12),
-          const Text(
-            'KASIR',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const Spacer(),
-          GestureDetector(
-            onLongPress: () => Get.to(() => const DebugPage()),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.person_outline,
-                color: Colors.white,
-                size: 22,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
@@ -269,7 +227,7 @@ class HomePage extends GetView<HomeController> {
         onChanged: (value) => controller.updateSearch(value),
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          hintText: 'Cari produk...',
+          hintText: 'Cari Nama Produk atau SKU...',
           hintStyle: const TextStyle(color: Colors.white54, fontSize: 14),
           prefixIcon: const Icon(Icons.search, color: Colors.white54),
           filled: true,
@@ -358,7 +316,7 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  Widget _buildProductCard(ProductModel product) {
+  Widget _buildProductCard(dynamic product) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -413,9 +371,17 @@ class HomePage extends GetView<HomeController> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (product.sku != null && product.sku!.isNotEmpty)
+                  Text(
+                    "SKU: ${product.sku}",
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[600],
+                    ),
+                  ),
                 const SizedBox(height: 4),
                 Text(
-                  AppUtils.formatRupiah(product.originalPrice),
+                  AppUtils.formatRupiah(product.finalPrice),
                   style: const TextStyle(
                     color: AppColors.primaryDark,
                     fontWeight: FontWeight.w900,
@@ -485,7 +451,7 @@ class HomePage extends GetView<HomeController> {
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey,
+          backgroundColor: AppColors.primaryDark,
           padding: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

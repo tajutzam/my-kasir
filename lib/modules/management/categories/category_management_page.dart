@@ -158,30 +158,62 @@ class CategoryManagementPage extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
+          color: Colors.white,
+          elevation: 4,
           itemBuilder: (context) => [
             PopupMenuItem(
+              value: 'edit',
               onTap: () => Future.delayed(
                 Duration.zero,
                 () => _showAddEditDialog(context, ctrl, category: category),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.edit_outlined, size: 20),
-                  SizedBox(width: 8),
-                  Text('Edit'),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryDark.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primaryDark),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Edit',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark,
+                    ),
+                  ),
                 ],
               ),
             ),
             PopupMenuItem(
+              value: 'delete',
               onTap: () => Future.delayed(
                 Duration.zero,
                 () => _showDeleteDialog(category, ctrl),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.delete_outline, size: 20, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Hapus', style: TextStyle(color: Colors.red)),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.badgeRed.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.delete_outline, size: 18, color: AppColors.badgeRed),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Hapus',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.badgeRed,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -199,68 +231,315 @@ class CategoryManagementPage extends StatelessWidget {
     final nameCtrl = TextEditingController(text: category?.name ?? '');
     bool isActive = category?.isActiveBool ?? true;
 
-    Get.defaultDialog(
-      title: category == null ? "Tambah Kategori" : "Edit Kategori",
-      titleStyle: const TextStyle(fontWeight: FontWeight.bold),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-      content: StatefulBuilder(
-        builder: (context, setState) {
-          return Column(
-            children: [
-              TextField(
-                controller: nameCtrl,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  labelText: "Nama Kategori",
-                  prefixIcon: Icon(Icons.label_important_outline),
-                ),
-              ),
-              const SizedBox(height: 10),
-              SwitchListTile(
-                title: const Text(
-                  "Status Aktif",
-                  style: TextStyle(fontSize: 14),
-                ),
-                value: isActive,
-                activeColor: AppColors.primaryDark,
-                contentPadding: EdgeInsets.zero,
-                onChanged: (v) => setState(() => isActive = v),
-              ),
-            ],
-          );
-        },
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryDark.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          category == null ? Icons.add_circle_outline : Icons.edit_outlined,
+                          color: AppColors.primaryDark,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          category == null ? "Tambah Kategori" : "Edit Kategori",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.close, size: 18, color: Colors.grey[600]),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Form Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8F9FA),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey[200]!),
+                    ),
+                    child: TextField(
+                      controller: nameCtrl,
+                      autofocus: true,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: "Nama Kategori",
+                        labelStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Status Toggle
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? AppColors.primaryDark.withValues(alpha: 0.08)
+                          : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isActive ? AppColors.primaryDark.withValues(alpha: 0.3) : Colors.grey[300]!,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isActive ? Icons.check_circle_outline : Icons.cancel_outlined,
+                          color: isActive ? AppColors.primaryDark : Colors.grey,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Status Aktif",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textDark,
+                                ),
+                              ),
+                              Text(
+                                isActive ? "Kategori akan ditampilkan" : "Kategori disembunyikan",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isActive ? AppColors.primaryDark : Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: isActive,
+                          activeTrackColor: AppColors.primaryDark.withValues(alpha: 0.5),
+                          activeThumbColor: AppColors.primaryDark,
+                          onChanged: (v) => setState(() => isActive = v),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            side: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          child: Text(
+                            "Batal",
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (nameCtrl.text.trim().isNotEmpty) {
+                              await ctrl.saveCategory(nameCtrl.text.trim(), isActive, category);
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
+                            } else {
+                              Get.snackbar(
+                                "Error",
+                                "Nama kategori tidak boleh kosong",
+                                backgroundColor: Colors.red,
+                                colorText: Colors.white,
+                                snackPosition: SnackPosition.BOTTOM,
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryDark,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: const Text(
+                            "Simpan",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
-      textConfirm: "Simpan",
-      textCancel: "Batal",
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.grey, // Sesuai instruksi: Tombol abu-abu
-      onConfirm: () {
-        if (nameCtrl.text.trim().isNotEmpty) {
-          ctrl.saveCategory(nameCtrl.text.trim(), isActive, category);
-        } else {
-          Get.snackbar(
-            "Error",
-            "Nama kategori tidak boleh kosong",
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        }
-      },
+      barrierDismissible: true,
     );
   }
 
   void _showDeleteDialog(CategoryModel category, CategoryController ctrl) {
-    Get.defaultDialog(
-      title: "Hapus Kategori?",
-      middleText:
-          "Kategori '${category.name}' akan dipindahkan ke tempat sampah.",
-      textConfirm: "Hapus",
-      textCancel: "Batal",
-      confirmTextColor: Colors.white,
-      buttonColor: AppColors.badgeRed,
-      onConfirm: () {
-        ctrl.deleteCategory(category.id!);
-        Get.back();
-      },
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Builder(
+          builder: (context) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Icon warning
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.badgeRed.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.delete_outline, color: AppColors.badgeRed, size: 32),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Title
+                  const Text(
+                    "Hapus Kategori?",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Message
+                  Text(
+                    "Kategori '${category.name}' akan dipindahkan ke tempat sampah.",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            side: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          child: Text(
+                            "Batal",
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await ctrl.deleteCategory(category.id!);
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.badgeRed,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            "Hapus",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+      barrierDismissible: true,
     );
   }
 

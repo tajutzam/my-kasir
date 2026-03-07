@@ -32,6 +32,9 @@ class ProductManagementPage extends StatelessWidget {
           // Search Section
           _buildSearchHeader(ctrl, searchCtrl),
 
+          // Category Filter
+          _buildCategoryFilter(ctrl),
+
           // List Produk
           Expanded(
             child: Obx(() {
@@ -85,6 +88,62 @@ class ProductManagementPage extends StatelessWidget {
     );
   }
 
+  Widget _buildCategoryFilter(ProductController ctrl) {
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Obx(() {
+        final selectedId = ctrl.selectedCategoryId.value;
+
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: ctrl.categories.length + 1,
+          itemBuilder: (context, index) {
+            final isAll = index == 0;
+            final int categoryId = isAll
+                ? 0
+                : (ctrl.categories[index - 1].id ?? 0);
+            final String categoryName = isAll
+                ? "Semua"
+                : ctrl.categories[index - 1].name;
+
+            final bool isSelected = selectedId == categoryId;
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                checkmarkColor: Colors.white,
+                key: ValueKey('cat_$categoryId'),
+                label: Text(categoryName),
+                selected: isSelected,
+                onSelected: (selected) {
+                  if (selected) ctrl.updateCategory(categoryId);
+                },
+                selectedColor: AppColors.primaryMedium,
+                backgroundColor: Colors.grey[300],
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black87,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: isSelected
+                        ? AppColors.primaryMedium
+                        : Colors.transparent,
+                  ),
+                ),
+                elevation: 0,
+                pressElevation: 0,
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+
   Widget _buildProductItem(
     BuildContext context,
     ProductModel product,
@@ -122,6 +181,15 @@ class ProductManagementPage extends StatelessWidget {
                   ctrl.getCategoryName(product.categoryId),
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
+                if (product.sku != null && product.sku!.isNotEmpty)
+                  Text(
+                    "SKU: ${product.sku}",
+                    style: const TextStyle(
+                      color: AppColors.primaryDark,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
@@ -139,9 +207,71 @@ class ProductManagementPage extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            onPressed: () => _showProductOptions(context, product, ctrl),
-            icon: const Icon(Icons.more_horiz),
+          PopupMenuButton(
+            icon: const Icon(Icons.more_vert, color: Colors.grey),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            color: Colors.white,
+            elevation: 4,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'edit',
+                onTap: () => Future.delayed(
+                  Duration.zero,
+                  () => _showFormProduct(context, ctrl, product: product),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryDark.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primaryDark),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Edit',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                onTap: () => Future.delayed(
+                  Duration.zero,
+                  () => _showConfirmDelete(product, ctrl),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.badgeRed.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.delete_outline, size: 18, color: AppColors.badgeRed),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Hapus',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.badgeRed,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -220,14 +350,15 @@ class ProductManagementPage extends StatelessWidget {
 
     Get.bottomSheet(
       isScrollControlled: true,
-      Container(
-        padding: const EdgeInsets.all(24),
-        constraints: BoxConstraints(maxHeight: Get.height * 0.85),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-        ),
-        child: SingleChildScrollView(
+      Builder(
+        builder: (sheetContext) => Container(
+          padding: const EdgeInsets.all(24),
+          constraints: BoxConstraints(maxHeight: Get.height * 0.85),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+          ),
+          child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -288,42 +419,127 @@ class ProductManagementPage extends StatelessWidget {
                   value: selectedId,
                   items: ctrl.categories
                       .map(
-                        (c) =>
-                            DropdownMenuItem(value: c.id, child: Text(c.name)),
+                        (c) => DropdownMenuItem(
+                          value: c.id,
+                          child: Text(
+                            c.name,
+                            style: const TextStyle(
+                              color: AppColors.textDark,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       )
                       .toList(),
                   onChanged: (v) => selectedId = v,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: "Pilih Kategori",
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.primaryDark, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                  ),
+                  icon: const Icon(Icons.arrow_drop_down, color: AppColors.primaryDark),
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  style: const TextStyle(color: AppColors.textDark),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: "Nama Produk",
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.primaryDark, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
                   ),
                 ),
               ),
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(labelText: "Nama Produk"),
-              ),
+              const SizedBox(height: 16),
               TextField(
                 controller: skuCtrl,
                 decoration: InputDecoration(
                   labelText: "SKU / Barcode",
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.primaryDark, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
                   suffixIcon: IconButton(
                     onPressed: generateSKU,
                     icon: const Icon(
                       Icons.auto_awesome_rounded,
-                      color: Colors.blueGrey,
+                      color: AppColors.primaryDark,
                     ),
                     tooltip: "Generate Otomatis",
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: priceCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "Harga Jual",
+                        labelStyle: const TextStyle(color: Colors.grey),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.primaryDark, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
                       ),
                     ),
                   ),
@@ -332,7 +548,26 @@ class ProductManagementPage extends StatelessWidget {
                     child: TextField(
                       controller: stockCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: "Stok"),
+                      decoration: InputDecoration(
+                        labelText: "Stok",
+                        labelStyle: const TextStyle(color: Colors.grey),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.primaryDark, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -342,10 +577,10 @@ class ProductManagementPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
+                    backgroundColor: AppColors.primaryDark,
                     padding: const EdgeInsets.all(16),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (selectedId == null || nameCtrl.text.isEmpty) return;
                     final m =
                         (product ??
@@ -364,7 +599,10 @@ class ProductManagementPage extends StatelessWidget {
                               stock: int.tryParse(stockCtrl.text) ?? 0,
                               // imagePath akan dihandle di controller
                             );
-                    ctrl.saveProduct(m, isEdit: product != null);
+                    await ctrl.saveProduct(m, isEdit: product != null);
+                    if (sheetContext.mounted) {
+                      Navigator.pop(sheetContext);
+                    }
                   },
                   child: const Text(
                     "SIMPAN",
@@ -378,6 +616,7 @@ class ProductManagementPage extends StatelessWidget {
               const SizedBox(height: 40), // Spasi ekstra untuk keyboard
             ],
           ),
+        ),
         ),
       ),
     );
@@ -412,48 +651,112 @@ class ProductManagementPage extends StatelessWidget {
     );
   }
 
-  void _showProductOptions(
-    BuildContext context,
-    ProductModel product,
-    ProductController ctrl,
-  ) {
-    Get.bottomSheet(
-      Container(
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text('Edit Produk'),
-              onTap: () {
-                Get.back();
-                _showFormProduct(context, ctrl, product: product);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text(
-                'Hapus Produk',
-                style: TextStyle(color: Colors.red),
+  void _showConfirmDelete(ProductModel product, ProductController ctrl) {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Builder(
+          builder: (context) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
               ),
-              onTap: () => _showConfirmDelete(product, ctrl),
-            ),
-          ],
+              child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon warning
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.badgeRed.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.delete_outline, color: AppColors.badgeRed, size: 32),
+              ),
+              const SizedBox(height: 16),
+
+              // Title
+              const Text(
+                "Hapus Produk?",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Message
+              Text(
+                "Yakin ingin menghapus ${product.name}?",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      child: Text(
+                        "Batal",
+                        style: TextStyle(
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await ctrl.softDelete(product.id!);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.badgeRed,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Hapus",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+            );
+          },
         ),
       ),
-    );
-  }
-
-  void _showConfirmDelete(ProductModel product, ProductController ctrl) {
-    Get.defaultDialog(
-      title: "Hapus Produk",
-      middleText: "Yakin ingin menghapus ${product.name}?",
-      textConfirm: "Hapus",
-      textCancel: "Batal",
-      confirmTextColor: Colors.white,
-      buttonColor: AppColors.badgeRed,
-      onConfirm: () => ctrl.softDelete(product.id!),
+      barrierDismissible: true,
     );
   }
 

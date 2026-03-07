@@ -280,15 +280,31 @@ class CartController extends GetxController {
 
     if (existingIndex != -1) {
       cartItems[existingIndex] = cartItems[existingIndex].incrementQuantity();
+      // Show feedback when incrementing
+      Get.snackbar(
+        'Berhasil',
+        'Jumlah ${product.name} ditambahkan',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.primaryDark,
+        colorText: Colors.white,
+        duration: const Duration(milliseconds: 1000),
+        margin: const EdgeInsets.all(12),
+        borderRadius: 12,
+        icon: const Icon(Icons.check_circle, color: Colors.white),
+      );
     } else {
       cartItems.add(CartItemModel(product: product, quantity: 1));
+      // Show feedback when adding new product
       Get.snackbar(
         'Berhasil',
         '${product.name} ditambah ke keranjang',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.black87,
+        backgroundColor: AppColors.primaryDark,
         colorText: Colors.white,
-        duration: const Duration(milliseconds: 800),
+        duration: const Duration(milliseconds: 1000),
+        margin: const EdgeInsets.all(12),
+        borderRadius: 12,
+        icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
       );
     }
   }
