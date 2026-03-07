@@ -47,8 +47,10 @@ class ProductModel {
   DateTime? get deletedAt => deletedAtMillis != null
       ? DateTime.fromMillisecondsSinceEpoch(deletedAtMillis!)
       : null;
-  DateTime get createdAt => DateTime.fromMillisecondsSinceEpoch(createdAtMillis);
-  DateTime get updatedAt => DateTime.fromMillisecondsSinceEpoch(updatedAtMillis);
+  DateTime get createdAt =>
+      DateTime.fromMillisecondsSinceEpoch(createdAtMillis);
+  DateTime get updatedAt =>
+      DateTime.fromMillisecondsSinceEpoch(updatedAtMillis);
 
   // Computed properties
   double get finalPrice {
@@ -58,7 +60,10 @@ class ProductModel {
     return originalPrice;
   }
 
-  bool get hasDiscount => discountPrice != null && discountPrice! > 0 && discountPrice! < originalPrice;
+  bool get hasDiscount =>
+      discountPrice != null &&
+      discountPrice! > 0 &&
+      discountPrice! < originalPrice;
 
   ProductModel({
     this.id,
@@ -76,8 +81,12 @@ class ProductModel {
     this.deletedAtMillis,
     DateTime? createdAt,
     DateTime? updatedAt,
-  })  : createdAtMillis = createdAt?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
-        updatedAtMillis = updatedAt?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch;
+  }) : createdAtMillis =
+           createdAt?.millisecondsSinceEpoch ??
+           DateTime.now().millisecondsSinceEpoch,
+       updatedAtMillis =
+           updatedAt?.millisecondsSinceEpoch ??
+           DateTime.now().millisecondsSinceEpoch;
 
   // CopyWith method
   ProductModel copyWith({

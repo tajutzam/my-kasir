@@ -17,14 +17,17 @@ import '../dao/store_profile_dao.dart';
 
 part 'app_database.g.dart';
 
-@Database(version: 3, entities: [
-  ProductModel,
-  UserModel,
-  CategoryModel,
-  TransactionModel,
-  TransactionItemModel,
-  StoreProfileModel,
-])
+@Database(
+  version: 3,
+  entities: [
+    ProductModel,
+    UserModel,
+    CategoryModel,
+    TransactionModel,
+    TransactionItemModel,
+    StoreProfileModel,
+  ],
+)
 abstract class AppDatabase extends FloorDatabase {
   ProductDao get productDao;
   UserDao get userDao;
