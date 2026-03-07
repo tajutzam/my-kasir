@@ -69,6 +69,8 @@ class HomePage extends GetView<HomeController> {
       initialChildSize: 0.12,
       minChildSize: 0.12,
       maxChildSize: 0.9,
+      snap: true,
+      snapSizes: const [0.12, 0.5, 0.9],
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -76,21 +78,18 @@ class HomePage extends GetView<HomeController> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 15,
                 offset: const Offset(0, -5),
               ),
             ],
           ),
-          // Kita tidak menggunakan Column di sini agar ListView bisa memenuhi seluruh area
           child: ListView(
             controller: scrollController,
-            padding: EdgeInsets.zero, // Set zero agar header menempel ke atas
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.zero,
             children: [
-              // SEKARANG HEADER ADA DI DALAM LISTVIEW
-              // Ini membuat header bisa digunakan untuk menarik sheet
               _buildSheetHeader(),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -228,7 +227,7 @@ class HomePage extends GetView<HomeController> {
         onChanged: (value) => controller.updateSearch(value),
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          hintText: 'Cari produk...',
+          hintText: 'Cari Nama Produk atau SKU...',
           hintStyle: const TextStyle(color: Colors.white54, fontSize: 14),
           prefixIcon: const Icon(Icons.search, color: Colors.white54),
           filled: true,
@@ -372,6 +371,14 @@ class HomePage extends GetView<HomeController> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (product.sku != null && product.sku!.isNotEmpty)
+                  Text(
+                    "SKU: ${product.sku}",
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[600],
+                    ),
+                  ),
                 const SizedBox(height: 4),
                 Text(
                   AppUtils.formatRupiah(product.finalPrice),
@@ -444,7 +451,7 @@ class HomePage extends GetView<HomeController> {
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey,
+          backgroundColor: AppColors.primaryDark,
           padding: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
