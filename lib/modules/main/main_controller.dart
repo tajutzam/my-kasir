@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:my_kasir/app/routes/app_routes.dart';
 import 'package:my_kasir/modules/home/home_page.dart';
+import 'package:my_kasir/modules/info/info_page.dart';
 import 'package:my_kasir/modules/management/management_page.dart';
+import 'package:my_kasir/modules/management/products/product_management_page.dart';
 import 'package:my_kasir/modules/menu/menu_page.dart';
 import 'package:my_kasir/modules/offers/offers_page.dart';
 import 'package:my_kasir/modules/orders/orders_page.dart';
+import 'package:my_kasir/modules/report/report_page.dart';
 // Import pages Anda...
 
 class MainController extends GetxController {
@@ -19,6 +23,15 @@ class MainController extends GetxController {
   // Data Keuangan (Contoh)
   final income = 1500000.obs;
   final expense = 450000.obs;
+
+  final List<String> routeNames = [
+    Routes.HOME, // Kasir
+    Routes.MANAGEMENT_PRODUCT, // Produk
+    Routes.REPORT, // Laporan
+    Routes.MANAGEMENT_PAGE, // Kelola (Ganti ke route management kamu)
+    Routes.INFO, // Bantuan
+    Routes.SPLASH, // Logout (Redirect ke Splash/Login)
+  ];
 
   @override
   void onInit() {
@@ -34,9 +47,9 @@ class MainController extends GetxController {
 
   final pages = [
     HomePage(),
-    MenuPage(),
-    OrdersPage(),
-    OffersPage(),
+    ProductManagementPage(),
+    ReportPage(),
     ManagementPage(),
+    InfoPage(),
   ];
 }

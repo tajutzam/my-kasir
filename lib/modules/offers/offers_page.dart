@@ -138,30 +138,32 @@ class OffersPage extends StatelessWidget {
   Widget _buildOfferGrid(OffersController controller) {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(
+        return const SizedBox(
           height: 300,
-          child: CircularProgressIndicator(),
+          child: Center(child: CircularProgressIndicator()),
         );
       }
 
       if (controller.discountedProducts.isEmpty) {
-        return Center(
+        return SizedBox(
           height: 300,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.local_offer_outlined, size: 64, color: AppColors.textGrey.withValues(alpha: 0.5)),
-              const SizedBox(height: 16),
-              Text(
-                'No special offers available',
-                style: TextStyle(color: AppColors.textGrey, fontSize: 16),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => controller.refresh(),
-                child: Text('Refresh', style: TextStyle(color: AppColors.primaryDark)),
-              ),
-            ],
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.local_offer_outlined, size: 64, color: AppColors.textGrey.withValues(alpha: 0.5)),
+                const SizedBox(height: 16),
+                Text(
+                  'No special offers available',
+                  style: TextStyle(color: AppColors.textGrey, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => controller.refresh(),
+                  child: Text('Refresh', style: TextStyle(color: AppColors.primaryDark)),
+                ),
+              ],
+            ),
           ),
         );
       }
@@ -187,7 +189,7 @@ class OffersPage extends StatelessWidget {
     });
   }
 
-  Widget _buildOfferCard(product) {
+  Widget _buildOfferCard(dynamic product) {
     final hasDiscount = product.discountPrice != null && product.discountPrice! > 0;
     final discount = hasDiscount ? product.discountPercentage?.toInt() ?? 0 : 0;
 

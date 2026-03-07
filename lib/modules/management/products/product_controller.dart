@@ -26,7 +26,7 @@ class ProductController extends GetxController {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: source,
-      imageQuality: 70,
+      imageQuality: 30,
     );
 
     if (image != null) {

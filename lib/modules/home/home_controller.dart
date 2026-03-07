@@ -1,24 +1,23 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_kasir/core/services/database_service.dart';
+import 'package:my_kasir/data/models/category_model.dart';
+import 'package:my_kasir/data/models/product_model.dart';
 import 'package:my_kasir/data/repositories/category_repositories.dart';
 import 'package:my_kasir/data/repositories/product_repositories.dart';
-import 'package:my_kasir/data/models/product_model.dart';
 
 class HomeController extends GetxController {
   late final ProductRepository _productRepo;
   late final CategoryRepository _categoryRepo;
 
-  // All data from database
-  final products = <ProductModel>[].obs;
-  final categories = <Map<String, dynamic>>[].obs;
+  // Categories for display
+  var categories = <CategoryModel>[].obs;
 
-  // Filtered data for display
-  final filteredProducts = <ProductModel>[].obs;
-
-  // Search
-  final searchQuery = ''.obs;
-  final selectedCategoryId = 0.obs;
+  // Observables
+  var allProducts = <ProductModel>[].obs;
+  var filteredProducts = <ProductModel>[].obs;
+  var isLoading = true.obs;
+  var searchQuery = "".obs;
+  var selectedCategoryId = 0.obs;
 
   @override
   void onInit() {
@@ -26,74 +25,71 @@ class HomeController extends GetxController {
     final db = Get.find<DatabaseService>().database;
     _productRepo = ProductRepository(db);
     _categoryRepo = CategoryRepository(db);
-    loadData();
+    refreshData();
   }
 
-  Future<void> loadData() async {
-    // Load products
-    products.value = await _productRepo.getAll();
-    filteredProducts.assignAll(products);
-
-    // Load categories and add "All" at the beginning
-    final dbCategories = await _categoryRepo.getAll();
-
-    final allCategories = <Map<String, dynamic>>[
-      {'id': 0, 'name': 'All', 'icon': Icons.apps},
-      ...dbCategories.map((c) => {
-        'id': c.id,
-        'name': c.name,
-        'icon': Icons.category,
-      }),
-    ];
-
-    categories.assignAll(allCategories);
+  Future<void> refreshData() async {
+    isLoading(true);
+    await fetchCategories();
+    await fetchProducts();
+    isLoading(false);
   }
 
-  void filterByCategory(int categoryId) {
-    selectedCategoryId.value = categoryId;
-
-    if (categoryId == 0) {
-      // Show all products
-      filteredProducts.assignAll(products);
-    } else {
-      // Filter by category
-      filteredProducts.assignAll(
-        products.where((p) => p.categoryId == categoryId),
-      );
-    }
-
-    // Apply search filter if there's a search query
-    if (searchQuery.value.isNotEmpty) {
-      searchProducts(searchQuery.value);
+  Future<void> fetchCategories() async {
+    try {
+      isLoading(true);
+      final categoriesResponse = await _categoryRepo.getAll();
+      categories.assignAll(categoriesResponse);
+    } finally {
+      isLoading(false);
     }
   }
 
-  void searchProducts(String query) {
+  Future<void> fetchProducts() async {
+    try {
+      isLoading(true);
+      final products = await _productRepo.getAll();
+      allProducts.assignAll(products);
+      _applyFilter();
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  void updateCategory(int id) {
+    selectedCategoryId.value = id;
+    selectedCategoryId.refresh();
+    _applyFilter();
+  }
+
+  void updateSearch(String query) {
     searchQuery.value = query;
+    _applyFilter();
+  }
 
-    if (query.isEmpty) {
-      // Just apply category filter
-      filterByCategory(selectedCategoryId.value);
-      return;
-    }
+  void _applyFilter() {
+    // PENTING: Ambil nilai .value ke variabel lokal SEBELUM masuk ke fungsi .where
+    // Ini memastikan Obx tahu bahwa fungsi ini bergantung pada kedua variabel ini
+    final currentSearch = searchQuery.value.toLowerCase();
+    final currentCatId = selectedCategoryId.value;
 
-    final searchLower = query.toLowerCase();
+    var result = allProducts.where((product) {
+      // Gunakan variabel lokal di sini
+      bool matchesSearch =
+          product.name.toLowerCase().contains(currentSearch) ||
+          (product.sku?.toLowerCase().contains(currentSearch) ?? false);
 
-    // First filter by category if needed
-    var baseList = selectedCategoryId.value == 0
-        ? products
-        : products.where((p) => p.categoryId == selectedCategoryId.value);
+      bool matchesCategory =
+          currentCatId == 0 || product.categoryId == currentCatId;
 
-    // Then filter by search query
-    filteredProducts.assignAll(
-      baseList.where((p) =>
-        p.name.toLowerCase().contains(searchLower) ||
-        (p.sku?.toLowerCase().contains(searchLower) ?? false)),
-    );
+      return matchesSearch && matchesCategory;
+    }).toList();
+
+    filteredProducts.assignAll(result);
   }
 
   @override
   void refresh() {
-    loadData();
+    refreshData();
   }
 }
