@@ -7,4 +7,8 @@ abstract class Routes {
   static const MAIN = "/main";
   static const MANAGEMENT_PRODUCT = "/management-products";
   static const MANAGEMENT_CATEGORY = "/management-categories";
+  static const SPLASH = '/splash';
+  static const REPORT = '/report';
+  static const INFO = '/info';
+  static const MANAGEMENT_PAGE = '/management-page';
 }

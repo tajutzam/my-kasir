@@ -208,6 +208,16 @@ class ProductManagementPage extends StatelessWidget {
     );
     int? selectedId = product?.categoryId;
 
+    void generateSKU() {
+      final timestamp = DateTime.now().millisecondsSinceEpoch
+          .toString()
+          .substring(7);
+      final randomStr = (nameCtrl.text.length >= 2)
+          ? nameCtrl.text.substring(0, 2).toUpperCase()
+          : "PRD";
+      skuCtrl.text = "$randomStr-$timestamp";
+    }
+
     Get.bottomSheet(
       isScrollControlled: true,
       Container(
@@ -294,7 +304,17 @@ class ProductManagementPage extends StatelessWidget {
               ),
               TextField(
                 controller: skuCtrl,
-                decoration: const InputDecoration(labelText: "SKU / Barcode"),
+                decoration: InputDecoration(
+                  labelText: "SKU / Barcode",
+                  suffixIcon: IconButton(
+                    onPressed: generateSKU,
+                    icon: const Icon(
+                      Icons.auto_awesome_rounded,
+                      color: Colors.blueGrey,
+                    ),
+                    tooltip: "Generate Otomatis",
+                  ),
+                ),
               ),
               Row(
                 children: [

@@ -23,9 +23,13 @@ class TransactionModel {
   final String? voidReason;
   final int createdAtMillis;
 
+  final double cashReceived; // Uang yang diterima dari pembeli
+  final double changeAmount; // Kembalian yang diberikan
+
   // Getters for convenience
   DateTime get date => DateTime.fromMillisecondsSinceEpoch(dateMillis);
-  DateTime get createdAt => DateTime.fromMillisecondsSinceEpoch(createdAtMillis);
+  DateTime get createdAt =>
+      DateTime.fromMillisecondsSinceEpoch(createdAtMillis);
 
   // Computed properties
   double get finalTotal => totalAmount - totalDiscount - globalDiscount;
@@ -39,13 +43,19 @@ class TransactionModel {
     required this.totalAmount,
     this.totalDiscount = 0,
     this.globalDiscount = 0,
+    this.cashReceived = 0,
+    this.changeAmount = 0,
     required this.paymentMethod,
     required this.cashierName,
     this.status = 'completed',
     this.voidReason,
     DateTime? createdAt,
-  })  : dateMillis = date?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
-        createdAtMillis = createdAt?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch;
+  }) : dateMillis =
+           date?.millisecondsSinceEpoch ??
+           DateTime.now().millisecondsSinceEpoch,
+       createdAtMillis =
+           createdAt?.millisecondsSinceEpoch ??
+           DateTime.now().millisecondsSinceEpoch;
 
   // CopyWith method
   TransactionModel copyWith({
@@ -55,6 +65,8 @@ class TransactionModel {
     double? totalAmount,
     double? totalDiscount,
     double? globalDiscount,
+    double? cashReceived, // Tambahkan di sini
+    double? changeAmount, // Tambahkan di sini
     String? paymentMethod,
     String? cashierName,
     String? status,
@@ -67,6 +79,8 @@ class TransactionModel {
       totalAmount: totalAmount ?? this.totalAmount,
       totalDiscount: totalDiscount ?? this.totalDiscount,
       globalDiscount: globalDiscount ?? this.globalDiscount,
+      cashReceived: cashReceived ?? this.cashReceived, // Dan di sini
+      changeAmount: changeAmount ?? this.changeAmount,   // Dan di sini
       paymentMethod: paymentMethod ?? this.paymentMethod,
       cashierName: cashierName ?? this.cashierName,
       status: status ?? this.status,
@@ -77,9 +91,6 @@ class TransactionModel {
 
   // Void transaction
   TransactionModel voidTransaction(String reason) {
-    return copyWith(
-      status: 'voided',
-      voidReason: reason,
-    );
+    return copyWith(status: 'voided', voidReason: reason);
   }
 }
