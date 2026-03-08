@@ -17,10 +17,32 @@ class ProductController extends GetxController {
   late final CategoryRepository _categoryRepo;
 
   var products = <ProductModel>[].obs;
+  var allProducts = <ProductModel>[].obs; // Store all products for filtering
   var categories = <CategoryModel>[].obs;
   var isLoading = false.obs;
   var searchQuery = ''.obs;
+  var selectedCategoryId = 0.obs; // 0 means all categories
   var selectedImagePath = ''.obs;
+
+  // Getter untuk filtered products
+  List<ProductModel> get filteredProducts {
+    List<ProductModel> result = allProducts;
+
+    // Filter by category
+    if (selectedCategoryId.value != 0) {
+      result = result.where((p) => p.categoryId == selectedCategoryId.value).toList();
+    }
+
+    // Filter by search query
+    if (searchQuery.value.isNotEmpty) {
+      result = result.where((p) =>
+        p.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+        (p.sku != null && p.sku!.toLowerCase().contains(searchQuery.value.toLowerCase()))
+      ).toList();
+    }
+
+    return result;
+  }
 
   Future<void> pickImage(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
@@ -63,21 +85,22 @@ class ProductController extends GetxController {
         _productRepo.getAll(),
         _categoryRepo.getAll(),
       ]);
-      products.assignAll(results[0] as List<ProductModel>);
+      allProducts.assignAll(results[0] as List<ProductModel>);
+      products.assignAll(filteredProducts); // Update with filtered results
       categories.assignAll(results[1] as List<CategoryModel>);
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> searchProducts(String query) async {
+  void updateCategory(int categoryId) {
+    selectedCategoryId.value = categoryId;
+    products.assignAll(filteredProducts);
+  }
+
+  void searchProducts(String query) {
     searchQuery.value = query;
-    if (query.isEmpty) {
-      loadInitialData();
-      return;
-    }
-    final result = await _productRepo.search(query);
-    products.assignAll(result);
+    products.assignAll(filteredProducts);
   }
 
   Future<void> saveProduct(ProductModel product, {bool isEdit = false}) async {
@@ -96,9 +119,8 @@ class ProductController extends GetxController {
       } else {
         await _productRepo.insert(updatedProduct);
       }
-      loadInitialData();
+      await loadInitialData();
       selectedImagePath.value = '';
-      Get.back();
       _showSnackbar(
         "Sukses",
         "Produk berhasil disimpan",
@@ -106,6 +128,8 @@ class ProductController extends GetxController {
       );
     } catch (e) {
       _showSnackbar("Error", "Gagal menyimpan produk", AppColors.badgeRed);
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -114,8 +138,7 @@ class ProductController extends GetxController {
       id,
       DateTime.now().millisecondsSinceEpoch,
     );
-    loadInitialData();
-    Get.back();
+    await loadInitialData();
   }
 
   String getCategoryName(int id) {

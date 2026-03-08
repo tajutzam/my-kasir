@@ -37,6 +37,12 @@ abstract class ProductDao {
   )
   Future<List<ProductModel>> getInStockProducts();
 
+  // Discounted products
+  @Query(
+    'SELECT * FROM products WHERE discount_price IS NOT NULL AND discount_price > 0 AND is_deleted = 0 ORDER BY discount_percentage DESC',
+  )
+  Future<List<ProductModel>> getDiscountedProducts();
+
   // Soft delete
   @Query(
     'UPDATE products SET is_deleted = 1, deleted_at = :deletedAtMillis, is_active = 0 WHERE id = :id',

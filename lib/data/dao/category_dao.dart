@@ -36,5 +36,7 @@ abstract class CategoryDao {
   @Query('SELECT COUNT(*) FROM categories WHERE is_deleted = 0')
   Future<int?> countCategories();
 
-  Future<void> updateCategoryStatus(int id, int i) async {}
+  // Toggle status
+  @Query('UPDATE categories SET is_active = :status WHERE id = :id')
+  Future<void> updateCategoryStatus(int id, int status);
 }

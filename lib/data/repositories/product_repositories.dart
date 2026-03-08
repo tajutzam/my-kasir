@@ -30,6 +30,10 @@ class ProductRepository {
     return db.productDao.getLowStockProducts(minStock);
   }
 
+  Future<List<ProductModel>> getDiscountedProducts() {
+    return db.productDao.getDiscountedProducts();
+  }
+
   Future<int> insert(ProductModel product) {
     return db.productDao.insertProduct(product);
   }

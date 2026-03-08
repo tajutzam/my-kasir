@@ -11,18 +11,17 @@ class DatabaseService extends GetxService {
   static const String _dbName = 'pos_database.db';
 
   Future<DatabaseService> init() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, _dbName);
+    // FOR DEVELOPMENT: Uncomment to delete database on each launch
+    // TODO: Comment this out in production
+    // final dbPath = await getDatabasesPath();
+    // final path = join(dbPath, _dbName);
+    // try {
+    //   await deleteDatabase(path);
+    // } catch (e) {
+    //   // Database doesn't exist, that's fine
+    // }
 
-    // FOR DEVELOPMENT: Always delete old database to ensure clean schema
-    // TODO: Remove this in production
-    try {
-      await deleteDatabase(path);
-    } catch (e) {
-      // Database doesn't exist, that's fine
-    }
-
-    // Create fresh database
+    // Initialize database (persists data between app launches)
     database = await $FloorAppDatabase
         .databaseBuilder(_dbName)
         .build();

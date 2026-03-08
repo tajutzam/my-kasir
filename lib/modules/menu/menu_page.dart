@@ -3,84 +3,62 @@ import 'package:get/get.dart';
 import 'package:my_kasir/core/theme/app_colors.dart';
 import 'package:my_kasir/core/utils/app_utils.dart';
 import 'package:my_kasir/modules/cart/cart_controller.dart';
-import 'package:my_kasir/data/models/product_model.dart';
+import 'package:my_kasir/modules/menu/menu_data_controller.dart';
 
 class MenuPage extends StatelessWidget {
   MenuPage({super.key});
 
   final cartController = Get.find<CartController>();
 
-  // Products grouped by category
-  final productsByCategory = {
-    'Stationery': [
-      ProductModel(
-        id: 1,
-        categoryId: 1,
-        name: 'Premium Notebook',
-        sku: 'NB-001',
-        stock: 50,
-        originalPrice: 80000,
-      ),
-      ProductModel(
-        id: 2,
-        categoryId: 1,
-        name: 'Ballpoint Pen Black',
-        sku: 'PN-001',
-        stock: 100,
-        originalPrice: 85000,
-      ),
-    ],
-    'Electronics': [
-      ProductModel(
-        id: 4,
-        categoryId: 2,
-        name: 'USB Cable Type-C',
-        sku: 'USB-001',
-        stock: 75,
-        originalPrice: 94000,
-      ),
-    ],
-    'Food': [
-      ProductModel(
-        id: 3,
-        categoryId: 3,
-        name: 'Desk Organizer',
-        sku: 'DO-001',
-        stock: 30,
-        originalPrice: 75000,
-      ),
-    ],
-    'Beverages': [
-      ProductModel(
-        id: 6,
-        categoryId: 4,
-        name: 'File Folder A4',
-        sku: 'FF-001',
-        stock: 200,
-        originalPrice: 55000,
-      ),
-    ],
-  };
-
   @override
   Widget build(BuildContext context) {
+    Get.put(MenuDataController());
+    final controller = Get.find<MenuDataController>();
+
     return Scaffold(
       backgroundColor: AppColors.scaffold,
       body: SafeArea(
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: productsByCategory.keys.length,
-          itemBuilder: (context, index) {
-            final category = productsByCategory.keys.elementAt(index);
-            final products = productsByCategory[category]!;
-            return _buildCategorySection(category, products);
-          },
-        ),
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (controller.productsByCategory.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.menu_book_outlined, size: 64, color: AppColors.textGrey.withValues(alpha: 0.5)),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No categories or products found',
+                    style: TextStyle(color: AppColors.textGrey, fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => controller.refresh(),
+                    child: Text('Refresh', style: TextStyle(color: AppColors.primaryDark)),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: controller.productsByCategory.length,
+            itemBuilder: (context, index) {
+              final category = controller.productsByCategory.keys.elementAt(index);
+              final products = controller.productsByCategory[category]!;
+              return _buildCategorySection(category, products);
+            },
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildCategorySection(String category, List<ProductModel> products) {
+  Widget _buildCategorySection(String category, List<dynamic> products) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -103,7 +81,7 @@ class MenuPage extends StatelessWidget {
     );
   }
 
-  Widget _buildProductListItem(ProductModel product) {
+  Widget _buildProductListItem(dynamic product) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -127,7 +105,7 @@ class MenuPage extends StatelessWidget {
               color: AppColors.imagePlaceholder,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.inventory_2, color: AppColors.textGrey, size: 28),
+            child: const Icon(Icons.inventory_2, color: AppColors.textGrey, size: 30),
           ),
           const SizedBox(width: 12),
           // Product info
@@ -139,7 +117,7 @@ class MenuPage extends StatelessWidget {
                   product.name,
                   style: const TextStyle(
                     color: AppColors.textDark,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                   maxLines: 2,
@@ -155,7 +133,7 @@ class MenuPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  AppUtils.formatRupiah(product.originalPrice),
+                  AppUtils.formatRupiah(product.finalPrice),
                   style: const TextStyle(
                     color: AppColors.primaryDark,
                     fontWeight: FontWeight.bold,
@@ -165,14 +143,12 @@ class MenuPage extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
           // Add button
           GestureDetector(
             onTap: () => cartController.addToCart(product),
             child: Container(
-              width: 36,
-              height: 36,
-              decoration: const BoxDecoration(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
                 color: AppColors.primaryDark,
                 shape: BoxShape.circle,
               ),

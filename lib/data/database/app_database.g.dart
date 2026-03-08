@@ -387,6 +387,26 @@ class _$ProductDao extends ProductDao {
   }
 
   @override
+  Future<List<ProductModel>> getDiscountedProducts() async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM products WHERE discount_price IS NOT NULL AND discount_price > 0 AND is_deleted = 0 ORDER BY discount_percentage DESC',
+        mapper: (Map<String, Object?> row) => ProductModel(
+            id: row['id'] as int?,
+            categoryId: row['category_id'] as int,
+            name: row['name'] as String,
+            sku: row['sku'] as String?,
+            stock: row['stock'] as int,
+            costPrice: row['costPrice'] as double?,
+            originalPrice: row['originalPrice'] as double,
+            discountPrice: row['discountPrice'] as double?,
+            discountPercentage: row['discountPercentage'] as double?,
+            imagePath: row['imagePath'] as String?,
+            isActive: row['is_active'] as int,
+            isDeleted: row['is_deleted'] as int,
+            deletedAtMillis: row['deleted_at'] as int?));
+  }
+
+  @override
   Future<void> softDeleteProduct(
     int id,
     int deletedAtMillis,
@@ -704,6 +724,16 @@ class _$CategoryDao extends CategoryDao {
     return _queryAdapter.query(
         'SELECT COUNT(*) FROM categories WHERE is_deleted = 0',
         mapper: (Map<String, Object?> row) => row.values.first as int);
+  }
+
+  @override
+  Future<void> updateCategoryStatus(
+    int id,
+    int status,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE categories SET is_active = ?2 WHERE id = ?1',
+        arguments: [id, status]);
   }
 
   @override

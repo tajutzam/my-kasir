@@ -1,16 +1,16 @@
 import 'package:get/get.dart';
+import 'package:my_kasir/core/services/database_service.dart';
 import 'package:my_kasir/data/models/category_model.dart';
 import 'package:my_kasir/data/models/product_model.dart';
 import 'package:my_kasir/data/repositories/category_repositories.dart';
 import 'package:my_kasir/data/repositories/product_repositories.dart';
 
 class HomeController extends GetxController {
-  final ProductRepository repository;
+  late final ProductRepository _productRepo;
   late final CategoryRepository _categoryRepo;
 
+  // Categories for display
   var categories = <CategoryModel>[].obs;
-
-  HomeController(this.repository, this._categoryRepo);
 
   // Observables
   var allProducts = <ProductModel>[].obs;
@@ -22,6 +22,9 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    final db = Get.find<DatabaseService>().database;
+    _productRepo = ProductRepository(db);
+    _categoryRepo = CategoryRepository(db);
     refreshData();
   }
 
@@ -45,7 +48,7 @@ class HomeController extends GetxController {
   Future<void> fetchProducts() async {
     try {
       isLoading(true);
-      final products = await repository.getAll();
+      final products = await _productRepo.getAll();
       allProducts.assignAll(products);
       _applyFilter();
     } finally {
@@ -83,5 +86,10 @@ class HomeController extends GetxController {
     }).toList();
 
     filteredProducts.assignAll(result);
+  }
+
+  @override
+  void refresh() {
+    refreshData();
   }
 }
